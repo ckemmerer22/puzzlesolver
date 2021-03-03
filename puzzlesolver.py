@@ -1,21 +1,25 @@
+#import csv
+from random import shuffle
+
 # Edge-match puzzle solver v1
 # TODO: feature to read file containing card structure in similar
-# format and output results to stdout or a file
-# Figure out better approach to initialization loop 
-# how is first card placed being rotated?
+# format (e.g. JSON) and output results to stdout or a file
+
 
 # Define card deck as a list of lists; order is t,l,b,r
-cards = [[-2, -3, 4, 2],     #0
-         [2, 3, 4, 1],       #1
-         [2, -3, 4, -1],     #2
-         [1, 3, 4, -1],      #3
-         [-2, -3, 4, -1],    #4
-         [-1, 2, 4, -3],     #5
-         [-4, 1, -2, -3],    #6
-         [-4, 3, 1, 2],      #7
-         [-4, 1, -3, 2]]     #8
 
+# Frogs
+cards = [[1, 2, 3, -4],
+         [2, -1, 2, 1],
+         [3, 1, 4, -2],
+         [-2, 3, 4, -1],
+         [-3, 1, -2, -4],
+         [1, -4, 4, -3],
+         [2, -3, -1, -4],
+         [-4, 3, -2, 1],
+         [-3, 3, -4, -2]]
 
+    
 # Create an empty list (grid) to place cards; order is
 #  0  1  2
 #  3  4  5
@@ -164,7 +168,7 @@ def backtrack(card, posn):
     #print("grid is " + str(grid) + " posn is " + str(posn))
     if len(findMatches(card, posn)) == 0:
         if checkValidSolution(grid, 8):
-            print("Game is over")
+            #print("Game is over")
             return True
         else:
             #print("Leaf (no further matches) but not game over")
@@ -181,11 +185,34 @@ def backtrack(card, posn):
         return False
 
 
-# Try each card in start position; there are better ways to write this
-for n in range(0, 9):
-    if checkValidSolution(grid, 8): # there are better ways to check this
-        print("Solution is: " + str(grid))
-        print("Attempt count is: " + str(trackCount()))
-        break
-    else:
-        backtrack(cards[n], 1)
+results_table = []
+
+def printResults(count):
+    print("Count of tries/attempts to solve " + count)
+
+
+def gameStart():
+    for n in range(0, 9):
+        for z in range(0, 4):
+            cards[n] = rightRotate(cards[n], 1)
+            if checkValidSolution(grid, 8):
+                print("Solution is: " + str(grid))
+                results_table.append(grid)
+                printResults(str(trackCount()))
+                return
+            else:
+                backtrack(cards[n], 1)
+
+shuffle(cards)
+gameStart()
+            
+# data to be written row-wise in csv file
+
+# opening the csv file in 'a+' mode
+#file = open('results_table.csv', 'a+', newline ='')  
+# writing the data into the file
+#with file:
+#    write = csv.writer(file)
+#    write.writerows(results_table)
+
+
