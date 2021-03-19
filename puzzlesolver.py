@@ -1,23 +1,28 @@
-#import csv
+import sys, json
 from random import shuffle
 
 # Edge-match puzzle solver v1
-# TODO: feature to read file containing card structure in similar
-# format (e.g. JSON) and output results to stdout or a file
 
+def openFile():
+    if len(sys.argv) < 2:
+        print("File must be specified, quitting")
+        return
+    else:
+        try:
+            file = open(sys.argv[1])
+            array = file.read().replace("\n", " ")
+            file.close()
 
-# Define card deck as a list of lists; order is t,l,b,r
+            data  = json.loads(array)
+            cards = []
+            for n in range(len(data)):
+                cards.append(data[str(n)])
+            return cards
 
-# Frogs
-cards = [[1, 2, 3, -4],
-         [2, -1, 2, 1],
-         [3, 1, 4, -2],
-         [-2, 3, 4, -1],
-         [-3, 1, -2, -4],
-         [1, -4, 4, -3],
-         [2, -3, -1, -4],
-         [-4, 3, -2, 1],
-         [-3, 3, -4, -2]]
+        except NameError:
+            print("File could not be found")
+            return
+
 
     
 # Create an empty list (grid) to place cards; order is
@@ -85,9 +90,8 @@ def checkValidSolution(solution, posn):
         if (solution[posn][0] + solution[4][2]) == 0 and (solution[posn][1] + solution[6][3]) == 0:
             return True
     if posn == 8:
-        try: # This needs to have exception covered since we know we will be checking this as gameover condition
+        try:
             if (solution[posn][0] + solution[5][2]) == 0 and (solution[posn][1] + solution[7][3]) == 0:
-                #print("Valid at posn 8")
                 return True
             else:
                 return False
@@ -98,7 +102,7 @@ def checkValidSolution(solution, posn):
         return False
 
 
-# Simply returns the cards which are available to play (not placed on grid)    
+# Simply returns the cards which are available to play (not placed on grid)
 def getRemainingCards():
     remainingcards = cards.copy()
     for c in list(grid):
@@ -118,7 +122,6 @@ def getRemainingCards():
 def findMatches(card, posn):
     matches = []
     remainingcards = getRemainingCards()
-    #print("remainingcards are " + str(remainingcards))
     for card in list(remainingcards):
         placeCard(card)
         if checkValidSolution(grid,posn): #if the card matches in next posn, add to match list and remove from grid
@@ -148,7 +151,6 @@ def trackCount(i=[0]):
 # Worker function to recurse through tree of card placement combinations
 def backtrack(card, posn):
     trackCount()
-    #print("cards are " + str(cards))
     remainingcards = getRemainingCards()
     if card in remainingcards:
         placeCard(card)
@@ -165,19 +167,15 @@ def backtrack(card, posn):
         except Exception:
             print("Error placing " + str(card))
 
-    #print("grid is " + str(grid) + " posn is " + str(posn))
     if len(findMatches(card, posn)) == 0:
         if checkValidSolution(grid, 8):
-            #print("Game is over")
             return True
         else:
-            #print("Leaf (no further matches) but not game over")
             removeCard(card)
             return False
     else:
         children = findMatches(card, posn)
-        #print("children (matches) are " + str(children) + " for posn " + str(posn))
-        posn = posn + 1
+        posn += 1
         for c in list(children):
             if backtrack(c, posn):
                 return True
@@ -203,6 +201,7 @@ def gameStart():
             else:
                 backtrack(cards[n], 1)
 
+cards = openFile()
 shuffle(cards)
 gameStart()
             
